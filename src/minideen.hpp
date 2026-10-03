@@ -119,7 +119,8 @@ struct MiniDeen : Filter {
       throw("radius (U) must be between 1 and 7 (inclusive).");
     if ((radius[2] < 1 || radius[2] > 7) && process[2] == 3)
       throw("radius (V) must be between 1 and 7 (inclusive).");
-    if (!in_vi.Format.IsInteger)
+    // 32 bit integer formats (e.g. GRAY32) pass IsInteger but have no core routine.
+    if (!in_vi.Format.IsInteger || in_vi.Format.BitsPerSample > 16)
       throw("only 8..16 bit integer clips with constant format are supported.");
     if (!in_vi.Format.IsFamilyYUV)
       throw("only YUV clips are supported.");
