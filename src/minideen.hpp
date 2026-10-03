@@ -29,6 +29,7 @@ struct MiniDeen : Filter {
   const char* AVSName() const override { return "neo_minideen"; }
   const MtMode AVSMode() const override { return MT_NICE_FILTER; }
   const VSFilterMode VSMode() const override { return fmParallel; }
+  const VSRequestPattern VSRequest() const override { return rpStrictSpatial; }
   const std::vector<Param> Params() const override {
     return std::vector<Param> {
       Param {"clip", Clip, false, true, true, false},
@@ -138,12 +139,13 @@ struct MiniDeen : Filter {
     // for (int i = 2; i < pixel_count; i++)
         // rcp[i] = (unsigned)(65536.0 / i + 0.5);
 
-    int CPUFlags = GetCPUFlags();
     switch (in_vi.Format.BytesPerSample) {
       case 1: minideen_core = minideen_C<uint8_t>; break;
       case 2: minideen_core = minideen_C<uint16_t>; break;
     }
 
+#if MINIDEEN_X86
+    int CPUFlags = GetCPUFlags();
     if ((CPUFlags & CPUF_SSE2) && (opt <= 0 || opt > 1)) {
       switch (in_vi.Format.BytesPerSample) {
         case 1: minideen_core = minideen_SSE2_8; break;
@@ -156,6 +158,7 @@ struct MiniDeen : Filter {
         case 2: minideen_core = minideen_AVX2_16; break;
       }
     }
+#endif
   }
 
   DSFrame GetFrame(int n, std::unordered_map<int, DSFrame> in_frames) override

@@ -1,4 +1,6 @@
 #include "minideen_common.h"
+
+#if MINIDEEN_X86
 #include <algorithm>
 #include <cmath>
 
@@ -223,3 +225,5 @@ void minideen_AVX2_16(const uint8_t *srcp8, uint8_t *dstp8, int width, int heigh
   }
   _mm256_zeroupper();
 }
+
+#endif
