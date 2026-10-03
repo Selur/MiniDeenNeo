@@ -6,6 +6,8 @@ MiniDeen is a spatial denoising filter. It replaces every pixel with the average
 
 This is a dual interface port of the [VapourSynth plugin MiniDeen](https://github.com/dubhater/vapoursynth-minideen) version beta 2.
 
+The VapourSynth interface uses the VapourSynth API 4 (VapourSynth R55 or newer). The AviSynth+ interface is unchanged.
+
 SSE2 is required to run optimized routine. AVX2 routine is also available. Unlike VapourSynth-MiniDeen, this filter returns binary identical result between SIMD and C routine, and SIMD routine does not call C routine for pixels close to frame border.
 
 ## Usage
@@ -62,7 +64,30 @@ Parameters:
     Default: 0.
 
 
-## Compilation (MSVC)
+## Installation
+
+Prebuilt wheels for Windows x64, Linux x86_64 and macOS arm64 are attached to each [GitHub release](../../releases). They are meant for the pip-installed `VapourSynth` package:
+
+```
+pip install vapoursynth_neo_minideen-<version>-py3-none-<platform>.whl
+```
+
+The plugin is installed into `site-packages/vapoursynth/plugins`, which VapourSynth autoloads. For other VapourSynth installs (installer, system package), copy the library from the wheel into your plugin folder manually.
+
+On architectures without x86 SIMD (e.g. macOS arm64) only the C routine is available, `opt` has no effect there.
+
+## Compilation (Meson)
+
+Meson and Ninja are required. The VapourSynth API 4 and AviSynth+ headers are bundled, a system installation of either is optional.
+
+```
+meson setup build
+ninja -C build
+```
+
+On macOS the plugin is built as `libneo-minideen.dylib`, which is the only extension VapourSynth autoloads there. Use `pip wheel .` to build a wheel (requires `meson-python`).
+
+## Compilation (MSVC, CMake)
 
 ```cmd
 mkdir build\x86

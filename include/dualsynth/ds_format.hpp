@@ -15,12 +15,12 @@ struct DSFormat
   int BitsPerSample {8}, BytesPerSample {1};
   int Planes {3};
   DSFormat() {}
-  DSFormat(const VSFormat* format)
+  DSFormat(const VSVideoFormat* format)
   {
     Planes = format->numPlanes;
-    IsFamilyYUV = format->colorFamily == cmYUV || format->colorFamily == cmGray;
-    IsFamilyRGB = format->colorFamily == cmRGB;
-    IsFamilyYCC = format->colorFamily == cmYCoCg;
+    IsFamilyYUV = format->colorFamily == cfYUV || format->colorFamily == cfGray;
+    IsFamilyRGB = format->colorFamily == cfRGB;
+    IsFamilyYCC = false;
     SSW = format->subSamplingW;
     SSH = format->subSamplingH;
     BitsPerSample = format->bitsPerSample;
@@ -29,16 +29,17 @@ struct DSFormat
     IsFloat = format->sampleType == stFloat;
   }
 
-  const VSFormat* ToVSFormat(const VSCore* vscore, const VSAPI* vsapi) const
+  VSVideoFormat ToVSFormat(const VSCore* vscore, const VSAPI* vsapi) const
   {
-    VSColorFamily family = cmYUV;
+    VSColorFamily family = cfYUV;
     if (IsFamilyYUV)
-      family = Planes == 1 ? cmGray : cmYUV;
+      family = Planes == 1 ? cfGray : cfYUV;
     else if (IsFamilyRGB)
-      family = cmRGB;
-    else if (IsFamilyYCC)
-      family = cmYCoCg;
-    return vsapi->registerFormat(family, IsInteger ? stInteger : stFloat, BitsPerSample, SSW, SSH, const_cast<VSCore*>(vscore));
+      family = cfRGB;
+    VSVideoFormat vsformat;
+    if (!vsapi->queryVideoFormat(&vsformat, family, IsInteger ? stInteger : stFloat, BitsPerSample, SSW, SSH, const_cast<VSCore*>(vscore)))
+      throw "unable to query a valid video format.";
+    return vsformat;
   }
 
   DSFormat(int format)
